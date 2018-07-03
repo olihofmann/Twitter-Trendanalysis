@@ -14,7 +14,10 @@ services:
     image: cassandra:3
     hostname: cassandra
     ports:
-      - "9042:9042"  
+      - "9042:9042"
+    volumes: 
+      - ./data/cassandra:/var/lib/cassandra
+    restart: always  
 
   kafka:
     image: confluentinc/cp-enterprise-kafka:5.0.0-beta30-1
@@ -33,9 +36,9 @@ services:
   
   sparkmaster:
     image: gettyimages/spark:2.3.0-hadoop-3.0
-    command: /usr/spark/bin/spark-class org.apache.spark.deploy.master.Master --ip master
     hostname: master
     environment:
+      INIT_DAEMON_STEP: setup_spark
       SPARK_CONF_DIR: /conf
     ports:
       - "4040:4040"
@@ -45,10 +48,10 @@ services:
     volumes:
       - ./conf/master:/conf
       - ./data:/tmp/data
+    restart: always
 
   sparkworker:
     image: gettyimages/spark:2.3.0-hadoop-3.0
-    command: /usr/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
     hostname: worker
     environment:
       SPARK_CONF_DIR: /conf
@@ -56,6 +59,7 @@ services:
       SPARK_WORKER_MEMORY: 1g
       SPARK_WORKER_PORT: 8881
       SPARK_WORKER_WEBUI_PORT: 8081
+      SPARK_MASTER: spark://spark-master:7077
     links:
       - kafka
       - sparkmaster
@@ -65,3 +69,4 @@ services:
     volumes:
       - ./conf/worker:/conf
       - ./data:/tmp/data
+    restart: always
