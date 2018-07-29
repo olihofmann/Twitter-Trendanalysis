@@ -1,7 +1,7 @@
 version: '2'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.0.0-beta30-1
+    image: wurstmeister/zookeeper
     hostname: zookeeper
     ports:
       - "2181:2181"
@@ -20,14 +20,16 @@ services:
     restart: always  
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.0.0-beta30-1
+    image: wurstmeister/kafka:2.11-1.1.1
+    hostname: broker-1
     ports:
       - "9092:9092"
     links:
       - zookeeper
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: ""
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:29092"
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_HOST_NAME: "192.168.1.106"
+      KAFKA_ADVERTISED_PORT: "9092"
       KAFKA_CREATE_TOPICS: "tweets"
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
