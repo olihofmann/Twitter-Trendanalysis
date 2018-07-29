@@ -27,6 +27,7 @@ services:
       - zookeeper
     environment:
       KAFKA_ADVERTISED_HOST_NAME: ""
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:29092"
       KAFKA_CREATE_TOPICS: "tweets"
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
