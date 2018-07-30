@@ -7,15 +7,20 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 
 # Define the Keyword List
-KEYWORDS = "burtonsnowboard"  
+KEYWORDS = "trump, python"
+KEYWORDS_LIST = []
+KEYWORDS_LIST += filter(bool, os.environ.get('KEYWORDS_LIST', 'trump').split(','))   
 
 # Variables for the Twitter API
-ACCESS_TOKEN = "2343354570-t4LW7hmh0ek8TrKRpWYFEarTYvBjmGI3KxR2T2t"
-ACCESS_TOKEN_SECRET = "pS1WuTyWBladQI8c7m5Pv6fEl4rWJkUhxLJirrHvHJz3b"
-CONSUMER_KEY = "MlRJiTxncDFzVqRz8v8bup2tZ"
-CONSUMER_SECRET = "5lxi2JNpg5s28OfZidTUS6LL1HRPVaTDUyQOAP5N970xzZFOFB"
+ACCESS_TOKEN = ""
+ACCESS_TOKEN_SECRET = ""
+CONSUMER_KEY = ""
+CONSUMER_SECRET = ""
 
 # Kafka Producer
+#client = KafkaClient("192.168.1.106:9092")
+#producer = SimpleProducer(client)
+
 producer = KafkaProducer(bootstrap_servers=["192.168.1.106:9092"])
 
 #This is a basic listener that just prints received tweets to stdout.
@@ -39,11 +44,11 @@ class Producer(object):
         auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
         stream = Stream(auth, l)
         #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-        stream.filter(track=filters)
+        stream.filter(track="trump")
 
 def main():
     twitter_producer = Producer()
-    twitter_producer.run(KEYWORDS)
+    twitter_producer.run(KEYWORDS_LIST)
 
 if __name__ == "__main__":
     main()
