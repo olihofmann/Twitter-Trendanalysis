@@ -77,3 +77,18 @@ services:
     depends_on: 
       - sparkmaster
     restart: always
+  
+  sparktwitterapp:
+    image: spark-streaming-kafka-cassandra
+    hostname: sparktwitterapp
+    container_name: sparktwitterapp
+    environment: 
+      INIT_DAEMON_STEP: setup_spark
+      SPARK_MASTER_NAME: spark://sparkmaster:7077
+      SPARK_MASTER_PORT: 7077
+    links: 
+      - sparkmaster
+      - cassandra
+    depends_on: 
+      - sparkmaster
+    restart: always
