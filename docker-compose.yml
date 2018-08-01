@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -28,9 +28,9 @@ services:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ADVERTISED_HOST_NAME: "192.168.1.106"
-      KAFKA_ADVERTISED_PORT: "9092"
-      KAFKA_CREATE_TOPICS: "tweets"
+      KAFKA_ADVERTISED_HOST_NAME: '192.168.1.106'
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_CREATE_TOPICS: 'Tweets'
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
     volumes:
@@ -38,8 +38,9 @@ services:
     restart: always
   
   sparkmaster:
-    image: gettyimages/spark:2.3.0-hadoop-3.0
-    hostname: master
+    image: bde2020/spark-master:2.3.1-hadoop2.7
+    hostname: sparkmaster
+    container_name: sparkmaster
     environment:
       INIT_DAEMON_STEP: setup_spark
       SPARK_CONF_DIR: /conf
@@ -54,15 +55,16 @@ services:
     restart: always
 
   sparkworker:
-    image: gettyimages/spark:2.3.0-hadoop-3.0
-    hostname: worker
+    image: bde2020/spark-worker:2.3.1-hadoop2.7
+    hostname: sparkworker
+    container_name: sparkworker
     environment:
       SPARK_CONF_DIR: /conf
       SPARK_WORKER_CORES: 1
       SPARK_WORKER_MEMORY: 1g
       SPARK_WORKER_PORT: 8881
       SPARK_WORKER_WEBUI_PORT: 8081
-      SPARK_MASTER: spark://spark-master:7077
+      SPARK_MASTER: spark://sparkmaster:7077
     links:
       - kafka
       - sparkmaster
@@ -72,4 +74,6 @@ services:
     volumes:
       - ./conf/worker:/conf
       - ./data:/tmp/data
+    depends_on: 
+      - sparkmaster
     restart: always
