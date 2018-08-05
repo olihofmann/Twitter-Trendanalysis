@@ -3,6 +3,8 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper
     hostname: zookeeper
+    networks: 
+      - twitteranalysesnetwork
     ports:
       - "2181:2181"
     environment:
@@ -13,6 +15,8 @@ services:
   cassandra:
     image: cassandra:3
     hostname: cassandra
+    networks: 
+      - twitteranalysesnetwork
     ports:
       - "9042:9042"
     volumes: 
@@ -24,8 +28,8 @@ services:
     hostname: broker-1
     ports:
       - "9092:9092"
-    links:
-      - zookeeper
+    networks: 
+      - twitteranalysesnetwork
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ADVERTISED_HOST_NAME: '192.168.1.106'
@@ -44,6 +48,8 @@ services:
     environment:
       INIT_DAEMON_STEP: setup_spark
       SPARK_CONF_DIR: /conf
+    networks: 
+      - twitteranalysesnetwork
     ports:
       - "4040:4040"
       - "6066:6066"
@@ -65,10 +71,8 @@ services:
       SPARK_WORKER_PORT: 8881
       SPARK_WORKER_WEBUI_PORT: 8081
       SPARK_MASTER: spark://sparkmaster:7077
-    links:
-      - kafka
-      - sparkmaster
-      - cassandra
+    networks: 
+      - twitteranalysesnetwork
     ports:
       - "8081"
     volumes:
@@ -83,12 +87,13 @@ services:
     hostname: sparktwitterapp
     container_name: sparktwitterapp
     environment: 
-      INIT_DAEMON_STEP: setup_spark
-      SPARK_MASTER_NAME: spark://sparkmaster:7077
+      SPARK_MASTER_NAME: sparkmaster
       SPARK_MASTER_PORT: 7077
-    links: 
-      - sparkmaster
-      - cassandra
+    networks: 
+      - twitteranalysesnetwork
     depends_on: 
       - sparkmaster
     restart: always
+
+networks:
+    twitteranalysesnetwork:
