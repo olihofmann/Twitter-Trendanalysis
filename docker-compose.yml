@@ -32,11 +32,11 @@ services:
       - twitteranalysesnetwork
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ADVERTISED_HOST_NAME: '192.168.1.106'
+      KAFKA_ADVERTISED_HOST_NAME: 192.168.1.106
       KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_CREATE_TOPICS: 'Tweets'
+      KAFKA_CREATE_TOPICS: Tweets
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  
     restart: always
@@ -51,7 +51,6 @@ services:
     networks: 
       - twitteranalysesnetwork
     ports:
-      - "4040:4040"
       - "6066:6066"
       - "7077:7077"
       - "8080:8080"
@@ -91,6 +90,8 @@ services:
       SPARK_MASTER_PORT: 7077
     networks: 
       - twitteranalysesnetwork
+    ports: 
+      - "4040:4040"
     depends_on: 
       - sparkmaster
     restart: always
