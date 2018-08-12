@@ -10,6 +10,11 @@ schema = StructType([
     StructField("text", StringType(), True) 
 ])
 
+def extract_noun(text):
+    is_noun = lambda pos: pos[:2] == "NN"
+    tokens = nltk.word_tokenize(text)
+    return [word for (word, pos) in nltk.pos_tag(tokens) if is_noun(pos)]
+
 # Create the Spark Session and the Application
 spark_session = SparkSession.builder.appName("TwitterTrendAnalyses").getOrCreate()
 
@@ -22,8 +27,8 @@ data_stream_string = data_stream_transformed.selectExpr("CAST(value AS STRING) a
 tweets_table = data_stream_string.select(from_json(col("json"), schema).alias("tweet"))
 
 # Get the Text from the Tweet Table
-tweet_text_table = tweets_table.selectExpr("tweet.text").alias("tweet_text")
+pos_tags_table = tweets_table.selectExpr(extract_verbs("tweet.text")).alias("pos_tags")
 
 #new_dataFrame = tweet_text_table.withColumn("nlp_text", "tweet_text")
-query = tweet_text_table.writeStream.trigger(processingTime='10 seconds').format("console").start()
+query = pos_tags_table.writeStream.trigger(processingTime='10 seconds').format("console").start()
 query.awaitTermination()
