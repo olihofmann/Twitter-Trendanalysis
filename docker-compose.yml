@@ -34,7 +34,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ADVERTISED_HOST_NAME: 192.168.1.106
       KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_CREATE_TOPICS: Tweets
+      KAFKA_CREATE_TOPICS: "Tweets:1:1"
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
@@ -94,6 +94,7 @@ services:
       - "4040:4040"
     depends_on: 
       - sparkmaster
+      - kafka
     restart: always
 
 networks:

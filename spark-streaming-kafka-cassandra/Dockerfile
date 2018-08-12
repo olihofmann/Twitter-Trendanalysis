@@ -7,10 +7,15 @@ ENV SCALA_VERSION 2.11
 ENV SPARK_APPLICATION_PYTHON_LOCATION /app/twitter_kafka_consumer.py
 ENV SPARK_APPLICATION_ARGS ""
 
-# Spark Kafka Streaming
+# Spark SQL
 RUN cd /tmp && \
-    wget http://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}/${SPARK_VERSION}/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar && \
-    mv spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar /spark/jars
+    wget http://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_${SCALA_VERSION}/${SPARK_VERSION}/spark-sql-kafka-0-10_${SCALA_VERSION}-${SPARK_VERSION}.jar && \
+    mv spark-sql-kafka-0-10_${SCALA_VERSION}-${SPARK_VERSION}.jar /spark/jars
+
+# Kafka Client
+RUN cd /tmp && \
+    wget https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/0.10.0.0/kafka-clients-0.10.0.0.jar && \
+    mv kafka-clients-0.10.0.0.jar /spark/jars
 
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 COPY requirements.txt /app/

@@ -11,7 +11,7 @@ echo "Passing arguments ${SPARK_APPLICATION_ARGS}"
 
 spark/bin/spark-submit \
     --master ${SPARK_MASTER_URL} \
-    --jars spark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.3.1.jar \
+    --jars spark/jars/spark-sql-kafka-0-10_2.11-2.3.1.jar,spark/jars/kafka-clients-0.10.0.0.jar \
     --num-executors 1 \
     --driver-memory 2g \
     --executor-memory 1g \
