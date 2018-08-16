@@ -17,10 +17,20 @@ RUN cd /tmp && \
     wget https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/0.10.0.0/kafka-clients-0.10.0.0.jar && \
     mv kafka-clients-0.10.0.0.jar /spark/jars
 
+# Spark NLP
+COPY spark-nlp-assembly-1.6.1.jar /spark/jars/
+RUN pip3 install --index-url https://test.pypi.org/simple/ spark-nlp==1.6.1
+
+# Install Numpy
+RUN apt-get update
+RUN apt-get -y upgrade
+RUN apt-get install -y build-essential
+RUN apt-get install -y python3-numpy
+
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 COPY requirements.txt /app/
 RUN cd /app \
-    && pip3 install -r requirements.txt
+    && pip3 install -U -r requirements.txt
 
 # Copy the source code
 COPY twitter_kafka_consumer.py /app
