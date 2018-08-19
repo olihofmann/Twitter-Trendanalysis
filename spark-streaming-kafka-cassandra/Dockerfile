@@ -7,6 +7,11 @@ ENV SCALA_VERSION 2.11
 ENV SPARK_APPLICATION_PYTHON_LOCATION /app/twitter_kafka_consumer.py
 ENV SPARK_APPLICATION_ARGS ""
 
+# Spark Kafka Streaming 
+RUN cd /tmp && \ 
+    wget http://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}/${SPARK_VERSION}/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar && \ 
+    mv spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar /spark/jars 
+    
 # Spark SQL
 RUN cd /tmp && \
     wget http://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_${SCALA_VERSION}/${SPARK_VERSION}/spark-sql-kafka-0-10_${SCALA_VERSION}-${SPARK_VERSION}.jar && \
@@ -20,6 +25,11 @@ RUN cd /tmp && \
 # Spark NLP
 COPY spark-nlp-assembly-1.6.1.jar /spark/jars/
 RUN pip3 install --index-url https://test.pypi.org/simple/ spark-nlp==1.6.1
+
+# PySpark Cassandra Connector
+RUN cd /tmp && \
+    wget http://dl.bintray.com/spark-packages/maven/anguenot/pyspark-cassandra/0.9.0/pyspark-cassandra-0.9.0.jar && \
+    mv pyspark-cassandra-0.9.0.jar /spark/jars
 
 # Install Numpy
 RUN apt-get update
