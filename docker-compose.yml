@@ -60,7 +60,7 @@ services:
     restart: always
 
   sparkworker:
-    image: bde2020/spark-worker:2.3.1-hadoop2.7
+    image: spark-worker
     hostname: sparkworker
     container_name: sparkworker
     environment:
@@ -73,7 +73,7 @@ services:
     networks: 
       - twitteranalysesnetwork
     ports:
-      - "8081"
+      - "8081:8081"
     volumes:
       - ./conf/worker:/conf
       - ./data:/tmp/data

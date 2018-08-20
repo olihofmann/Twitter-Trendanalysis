@@ -7,11 +7,32 @@ ENV SCALA_VERSION 2.11
 ENV SPARK_APPLICATION_PYTHON_LOCATION /app/twitter_kafka_consumer.py
 ENV SPARK_APPLICATION_ARGS ""
 
+# Configure environment
+ENV CONDA_DIR /opt/conda
+ENV PATH $CONDA_DIR/bin:$PATH
+
+#Install Anaconda
+RUN curl -s https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh -o anaconda.sh && \
+    chmod a+x anaconda.sh && \
+    ./anaconda.sh -b -p $CONDA_DIR && \
+    rm ./anaconda.sh && \
+    $CONDA_DIR/bin/conda install -y -q jupyter notebook && \
+    $CONDA_DIR/bin/conda clean -tipsy
+
+#Environment vaiables for Spark to use Anaconda Python and Jupyter notebook
+ENV PYSPARK_PYTHON $CONDA_DIR/bin/python3
+ENV PYSPARK_DRIVER_PYTHON $CONDA_DIR/bin/python3
+
+# Install NLTK
+RUN conda install -c anaconda nltk
+RUN python3 -m nltk.downloader punkt
+RUN python3 -m nltk.downloader averaged_perceptron_tagger
+
 # Spark Kafka Streaming 
 RUN cd /tmp && \ 
     wget http://repo1.maven.org/maven2/org/apache/spark/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}/${SPARK_VERSION}/spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar && \ 
     mv spark-streaming-kafka-0-8-assembly_${SCALA_VERSION}-${SPARK_VERSION}.jar /spark/jars 
-    
+
 # Spark SQL
 RUN cd /tmp && \
     wget http://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_${SCALA_VERSION}/${SPARK_VERSION}/spark-sql-kafka-0-10_${SCALA_VERSION}-${SPARK_VERSION}.jar && \
@@ -22,20 +43,10 @@ RUN cd /tmp && \
     wget https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/0.10.0.0/kafka-clients-0.10.0.0.jar && \
     mv kafka-clients-0.10.0.0.jar /spark/jars
 
-# Spark NLP
-COPY spark-nlp-assembly-1.6.1.jar /spark/jars/
-RUN pip3 install --index-url https://test.pypi.org/simple/ spark-nlp==1.6.1
-
 # PySpark Cassandra Connector
 RUN cd /tmp && \
     wget http://dl.bintray.com/spark-packages/maven/anguenot/pyspark-cassandra/0.9.0/pyspark-cassandra-0.9.0.jar && \
     mv pyspark-cassandra-0.9.0.jar /spark/jars
-
-# Install Numpy
-RUN apt-get update
-RUN apt-get -y upgrade
-RUN apt-get install -y build-essential
-RUN apt-get install -y python3-numpy
 
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 COPY requirements.txt /app/

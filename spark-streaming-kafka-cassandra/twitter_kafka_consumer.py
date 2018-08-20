@@ -1,7 +1,6 @@
 import sys
-import os
-import glob
 import json
+import nltk
 
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
@@ -21,20 +20,29 @@ def getSqlContextInstance(sparkContext):
         globals()["sqlContextSingletonInstance"] = SQLContext(sparkContext)
     return globals()["sqlContextSingletonInstance"]
 
+def extract_noun(text):
+    is_noun = lambda pos: pos[:2] == "NN" 
+    tokens = nltk.word_tokenize(text) 
+    return [word for (word, pos) in nltk.pos_tag(tokens) if is_noun(pos)] 
+
 def processTweets(time, rdd):
     print("========= %s =========" % str(time))
     try:
         sql_context = getSqlContextInstance(rdd.context)
         json_RDD = sql_context.read.schema(schema).json(rdd)
-        json_RDD.show()
+
+        # # udf = USER DEFINED FUNCTION
+        text_to_pos = udf(extract_noun, StringType())
+        tweet_text_table = json_RDD.select("text")
+        nouns_table = tweet_text_table.withColumn("nouns", text_to_pos("text"))
+        nouns_table.show()
         #json_RDD.registerTempTable("tweets")
-        print("process tweet")
     except:
         print("Error process tweet")
         pass
 
 spark_context = SparkContext(appName="TwitterTrendAnalyses") 
-stream_context = StreamingContext(spark_context, 2) 
+stream_context = StreamingContext(spark_context, 10) 
  
 kafka_stream = KafkaUtils.createDirectStream(stream_context, ["Tweets"], {"metadata.broker.list": "192.168.1.106:9092"}) 
 kafka_stream.map(lambda rawTweet: rawTweet[1]).foreachRDD(processTweets)
