@@ -43,8 +43,9 @@ class Producer(object):
         auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
         auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
         stream = Stream(auth, l)
+
         #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-        stream.filter(track="trump")
+        stream.filter(track=["beachwear", "kitesurfing", "surfing"], languages=["en"])
 
 def main():
     twitter_producer = Producer()
