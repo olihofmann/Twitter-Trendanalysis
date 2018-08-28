@@ -20,6 +20,9 @@ RUN conda install -c anaconda nltk
 RUN python3 -m nltk.downloader punkt
 RUN python3 -m nltk.downloader averaged_perceptron_tagger
 
+# Cassandra Driver
+RUN pip install cassandra-driver
+
 COPY worker.sh /
 
 ENV SPARK_WORKER_WEBUI_PORT 8081

@@ -94,7 +94,9 @@ services:
       - "4040:4040"
     depends_on: 
       - sparkmaster
+      - sparkworker
       - kafka
+      - cassandra
     restart: always
 
 networks:

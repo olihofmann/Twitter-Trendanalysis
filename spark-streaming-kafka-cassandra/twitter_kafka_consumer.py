@@ -1,6 +1,7 @@
 import sys
 import json
 import nltk
+import datetime
 
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
@@ -11,9 +12,41 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 
+from cassandra import ConsistencyLevel
+from cassandra.cluster import Cluster
+from cassandra.query import SimpleStatement
+
+KEYSPACE = "tweet_keyspace"
 schema = StructType([                                                                                          
     StructField("text", StringType(), True)
 ])
+
+def createKeySpace():
+    print("Start creating keyspace")
+    cluster = Cluster(["cassandra"])
+    session = cluster.connect()
+
+    try:
+        session.execute("""
+            CREATE KEYSPACE IF NOT EXISTS %s
+            WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '2' }
+            """ % KEYSPACE)
+
+        session.set_keyspace(KEYSPACE)
+
+        session.execute("""
+            CREATE TABLE IF NOT EXISTS tweets (
+                noun text,
+                timestamp date,
+                count counter,
+                retweets counter,
+                likes counter,
+                PRIMARY KEY (noun, timestamp)
+            )
+            """)
+    except Exception as e:
+        print(e)
+        pass
 
 def getSqlContextInstance(sparkContext):
     if ("sqlContextSingletonInstance" not in globals()):
@@ -29,14 +62,34 @@ def processTweets(time, rdd):
     print("========= %s =========" % str(time))
     try:
         sql_context = getSqlContextInstance(rdd.context)
-        json_RDD = sql_context.read.schema(schema).json(rdd)
 
-        # # udf = USER DEFINED FUNCTION
-        text_to_pos = udf(extract_noun, StringType())
-        tweet_text_table = json_RDD.select("text")
-        nouns_table = tweet_text_table.withColumn("nouns", text_to_pos("text"))
-        nouns_table.show()
-        #json_RDD.registerTempTable("tweets")
+        # Parse the Tweet Json
+        tweet_dataframe = sql_context.read.schema(schema).json(rdd)
+
+        # Extract the relevant properties
+        extract_dataframe = tweet_dataframe.select("text")
+
+        # Define the user defined function
+        text_to_pos = udf(extract_noun, ArrayType(StringType()))
+
+        # Extract the nouns from the text
+        text_noun_dataframe = extract_dataframe.withColumn("nouns", text_to_pos("text"))
+
+        # Preparing the persist dataset
+        persist_dataframe = text_noun_dataframe.select(explode("nouns"))
+        persist_dataframe.show()
+
+        # rdd = rdd.context.parallelize([{
+	    #     "key": t[0],
+	    #     "timestamp": datetime.datetime.now().date(),
+	    #     "count": 1,
+	    #     "retweets": 10,
+	    #     "likes": 0
+        # } for t in persist_dataframe.collect()])
+
+        # rdd.saveToCassandra(
+	    #     "nouns",
+	    #     "tweets")
     except:
         print("Error process tweet")
         pass
@@ -49,56 +102,7 @@ kafka_stream.map(lambda rawTweet: rawTweet[1]).foreachRDD(processTweets)
 # parsed_stream = kafka_stream.map(lambda rawTweet: json.loads(rawTweet[1]))
 # parsed_stream.pprint()
 #parsed_stream.foreachRDD(processTweets)
- 
+
+createKeySpace()
 stream_context.start() 
 stream_context.awaitTermination()
-
-
-# # Load Spark NLP
-# sys.path.extend(glob.glob(os.path.join(os.path.expanduser("~"), "spark/jars/*.jar")))
-# from sparknlp.base import *
-# from sparknlp.annotator import *
-# #from sparknlp.pretrained.pipeline.en import BasicPipeline
-
-# schema = StructType([                                                                                          
-#     StructField("text", StringType(), True) 
-# ])
-
-# def extract_noun(text):
-#     #BasicPipeline().annotate(text)
-#     return text
-
-# def saveToCassandra(tweet):
-#     print(tweet.nouns)
-
-# # Create the Spark Session and the Application
-# spark_session = SparkSession.builder.appName("TwitterTrendAnalyses").getOrCreate()
-
-# # Read the Kafka Stream
-# twitter_data_stream = spark_session.readStream \
-#     .format("kafka") \
-#     .option("kafka.bootstrap.servers", "192.168.1.106:9092") \
-#     .option("subscribe", "Tweets") \
-#     .option("startingOffsets", "latest") \
-#     .load()
-
-# data_stream_transformed = twitter_data_stream.withWatermark("timestamp", "1 day")
-
-# # Extact the Json from the Kafka Stream
-# data_stream_string = data_stream_transformed.selectExpr("CAST(value AS STRING) as json")
-# tweets_table = data_stream_string.select(from_json(col("json"), schema).alias("tweet"))
-
-# # Get the tweet data
-# tweet_text_table = tweets_table.select("tweet.text")
-
-# # udf = USER DEFINED FUNCTION
-# text_to_pos = udf(extract_noun, StringType())
-
-# # Get the Text from the Tweet Table
-# noun_table = tweet_text_table.withColumn("nouns", text_to_pos("text"))
-# #noun_table = tweets_table.selectExpr(text_to_pos("tweet.text")).alias("pos_tags")
-
-# #new_dataFrame = tweet_text_table.withColumn("nlp_text", "tweet_text")
-
-# query = noun_table.writeStream.trigger(processingTime='10 seconds').format("console").start()
-# query.awaitTermination()

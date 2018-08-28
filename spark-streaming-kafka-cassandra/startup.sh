@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sleep 1m
+
 export SPARK_MASTER_URL=spark://${SPARK_MASTER_NAME}:${SPARK_MASTER_PORT}
 export SPARK_HOME=/spark
 export HADOOP_HOME=/hadoop
@@ -13,7 +15,6 @@ echo "Passing arguments ${SPARK_APPLICATION_ARGS}"
 spark/bin/spark-submit \
     --master ${SPARK_MASTER_URL} \
     --jars spark/jars/spark-sql-kafka-0-10_2.11-2.3.1.jar,spark/jars/kafka-clients-0.10.0.0.jar,spark/jars/pyspark-cassandra-0.9.0.jar,spark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.3.1.jar \
-    --conf spark.cassandra.connection.host=cassandra \
     --py-files spark/jars/pyspark-cassandra-0.9.0.jar \
     --num-executors 1 \
     --driver-memory 2g \

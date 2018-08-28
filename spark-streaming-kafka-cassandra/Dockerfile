@@ -48,6 +48,9 @@ RUN cd /tmp && \
     wget http://dl.bintray.com/spark-packages/maven/anguenot/pyspark-cassandra/0.9.0/pyspark-cassandra-0.9.0.jar && \
     mv pyspark-cassandra-0.9.0.jar /spark/jars
 
+# Cassandra Driver
+RUN pip install cassandra-driver
+
 # Copy the requirements.txt first, for separate dependency resolving and downloading
 COPY requirements.txt /app/
 RUN cd /app \
