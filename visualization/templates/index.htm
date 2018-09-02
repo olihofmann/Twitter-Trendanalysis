@@ -1,0 +1,33 @@
+<!doctype html>
+<html class="no-js" lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Twitter Trend</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="{{ url_for('static', filename='metricsgraphics.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='metricsgraphics.css') }}" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <script>
+        d3.json('get_values', function (data) {
+            data = MG.convert.date(data, 'date');
+            MG.data_graphic({
+                title: "Twitter Trendanalyse",
+                data: data,
+                width: 800,
+                height: 600,
+                right: 40,
+                target: document.getElementById('timeseries'),
+                x_accessor: 'date',
+                y_accessor: 'value'
+            });
+        });
+    </script>
+    <div id="timeseries"></div>
+    <div class="legend"></div>
+</body>
+
+</html>

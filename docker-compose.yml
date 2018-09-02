@@ -99,5 +99,16 @@ services:
       - cassandra
     restart: always
 
+  visualization:
+    image: visualization
+    restart: always
+    hostname: visualization
+    links:
+      - cassandra
+    ports:
+      - "80:5000"    
+    networks: 
+      - twitteranalysesnetwork
+
 networks:
     twitteranalysesnetwork:
