@@ -6,11 +6,6 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 
-# Define the Keyword List
-KEYWORDS = "trump, python"
-KEYWORDS_LIST = []
-KEYWORDS_LIST += filter(bool, os.environ.get('KEYWORDS_LIST', 'trump').split(','))   
-
 # Variables for the Twitter API
 ACCESS_TOKEN = "" 
 ACCESS_TOKEN_SECRET = "" 
@@ -49,7 +44,7 @@ class Producer(object):
 
 def main():
     twitter_producer = Producer()
-    twitter_producer.run(KEYWORDS_LIST)
+    twitter_producer.run("")
 
 if __name__ == "__main__":
     main()
