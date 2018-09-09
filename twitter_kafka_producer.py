@@ -32,7 +32,7 @@ class StdOutListener(StreamListener):
 
 class Producer(object):
 
-    def run(self, filters):
+    def run(self):
         #This handles Twitter authetification and the connection to Twitter Streaming API
         l = StdOutListener()
         auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -44,7 +44,7 @@ class Producer(object):
 
 def main():
     twitter_producer = Producer()
-    twitter_producer.run("")
+    twitter_producer.run()
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@ import sys
 import json
 import nltk
 import datetime
+import re
 
 from pyspark import SparkContext
 from pyspark.sql import SQLContext
@@ -67,10 +68,20 @@ def getSqlContextInstance(sparkContext):
         globals()["sqlContextSingletonInstance"] = SQLContext(sparkContext)
     return globals()["sqlContextSingletonInstance"]
 
+def clean_tweet(tweet):
+    # Remove Retweet text
+    tweet = re.sub(r'^RT[\s]+', '', tweet)
+    # Remove Hyperlinks
+    tweet = re.sub(r'https?:\/\/.*[\r\n]*', '', tweet)
+    # Remove Hashtag from the word
+    tweet = re.sub(r'#', '', tweet)
+    
+    return tweet
+
 def extract_noun(text):
     is_noun = lambda pos: pos[:2] == "NN" 
 
-    tweet_tokenizer = nltk.tokenize.TweetTokenizer()
+    tweet_tokenizer = nltk.tokenize.TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
     tokens = tweet_tokenizer.tokenize(text)
     return [word for (word, pos) in nltk.pos_tag(tokens) if is_noun(pos)] 
 
@@ -86,10 +97,11 @@ def processTweets(time, rdd):
         extract_dataframe = tweet_dataframe.select("text", "retweet_count", "favorite_count")
 
         # Define the user defined function
+        clean_text = udf(clean_tweet, StringType())
         text_to_pos = udf(extract_noun, ArrayType(StringType()))
 
         # Extract the data from the text
-        text_noun_dataframe = extract_dataframe.withColumn("nouns", text_to_pos("text"))
+        text_noun_dataframe = extract_dataframe.withColumn("nouns", text_to_pos(clean_text("text")))
 
         # Preparing the persist dataset
         persist_dataframe = text_noun_dataframe.select(explode("nouns"), "retweet_count", "favorite_count")

@@ -18,7 +18,7 @@ def get_values():
     session.set_keyspace('tweet_keyspace')
     session.row_factory = dict_factory
 
-    rows = session.execute("select timestamp, noun, count, retweets, likes from tweets where noun='Adidas'")
+    rows = session.execute("select timestamp, noun, count, retweets, likes from tweets where noun='adidas'")
     data = []
     for r in rows:
         d = {}
